@@ -24,6 +24,12 @@
                 .size([width,height])
                 .padding(1)(gamesRoot);
 
+
+//Colour by genre
+            const genreScale = d3.scaleOrdinal()
+                                    .domain(gamesData.children.map(d => d.name))
+                                    .range(d3.schemeCategory10);
+
             svg.selectAll("rect")
                 .data(gamesRoot.leaves())
                 .join("rect")
@@ -32,7 +38,7 @@
                 .attr("x", d => d.x0)
                 .attr("width", d => d.x1 - d.x0)
                 .attr("height", d => d.y1 - d.y0)
-                .style("fill", "red");
+                .style("fill", d => genreScale(d.parent.data.name));
 
 //Text addition
 svg.selectAll("text")
