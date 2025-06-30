@@ -1,6 +1,7 @@
 //Variables
     const width = 960;
-    const height = 600;
+    const height = 960;
+    const svgHeight = 600
     
 //Svg creation
 
@@ -11,7 +12,6 @@
                     .style("width", width)
                     .style("height", height);
 
-    svg.style("background-color", "black")
 
 //Data fetch
 
@@ -21,24 +21,26 @@
             const gamesRoot = d3.hierarchy(gamesData).sum(d => d.value);
 
             d3.treemap()
-                .size([width,height])
-                .padding(1)(gamesRoot);
+                .size([width,svgHeight])
+                .padding(0.2)(gamesRoot);
 
-
-//Colour by genre
-            const genreScale = d3.scaleOrdinal()
+//Colour by console
+            const colourScale = d3.scaleOrdinal()
                                     .domain(gamesData.children.map(d => d.name))
-                                    .range(d3.schemeCategory10);
+                                    .range(d3.schemeTableau10);
 
             svg.selectAll("rect")
                 .data(gamesRoot.leaves())
                 .join("rect")
                 .attr("class", "tile")
+                .attr("data-name", d => d.data.name)
+                .attr("data-category", d => d.data.category)
+                .attr("data-value", d => d.data.value)
                 .attr("y", d => d.y0)
                 .attr("x", d => d.x0)
                 .attr("width", d => d.x1 - d.x0)
                 .attr("height", d => d.y1 - d.y0)
-                .style("fill", d => genreScale(d.parent.data.name));
+                .style("fill", d => colourScale(d.parent.data.name));
 
 //Text addition
 svg.selectAll("text")
@@ -58,5 +60,34 @@ svg.selectAll("text")
             .attr("x",d.x0 + 1)
             .attr("dy", (d, i) => i === 0 ? 0: "1.2em")
             .text(d => d);
-    });
-        })
+        });
+
+//Legend
+        const legend = svg.append("g")
+                            .attr("id", "legend")
+                            .attr("transform", `translate(0 , ${svgHeight + 30})`)
+
+//Legend items displayed their styling
+        const legendRect = legend.selectAll("rect")
+                                    .data(gamesData.children)
+                                    .join("rect")
+                                    .attr("class", "legend-item")
+                                    .attr("fill", d => colourScale(d.name))
+                                    .attr("height", 20)
+                                    .attr("width", 100)
+                                    .attr("x", (d, i) => i < 6 ? width - 800:
+                                                         i < 12 ? width - 500:
+                                                         width-200)//Divide i in three columns
+                                    .attr("y", (d, i) =>  i % 6 * 50)
+                                    .text(d => d.name);
+
+//Legend text
+        legend.selectAll("text")
+                    .data(gamesData.children)
+                    .join("text")
+                    .attr("x", (d, i) => (i < 6 ? width - 800:
+                                        i < 12 ? width - 500:
+                                        width-200) + 35)
+                    .attr("y", (d, i) =>  (i % 6 * 50) + 15)
+                    .text(d => d.name);                 
+        });
