@@ -29,7 +29,7 @@
                                     .domain(gamesData.children.map(d => d.name))
                                     .range(d3.schemeTableau10);
 
-            svg.selectAll("rect")
+            const game = svg.selectAll("rect")
                 .data(gamesRoot.leaves())
                 .join("rect")
                 .attr("class", "tile")
@@ -68,7 +68,7 @@ svg.selectAll("text")
                             .attr("transform", `translate(0 , ${svgHeight + 30})`)
 
 //Legend items displayed their styling
-        const legendRect = legend.selectAll("rect")
+        legend.selectAll("rect")
                                     .data(gamesData.children)
                                     .join("rect")
                                     .attr("class", "legend-item")
@@ -89,5 +89,39 @@ svg.selectAll("text")
                                         i < 12 ? width - 500:
                                         width-200) + 35)
                     .attr("y", (d, i) =>  (i % 6 * 50) + 15)
-                    .text(d => d.name);                 
+                    .text(d => d.name);             
+                    
+//Tooltip creation
+        const tooltip = d3.select("body")
+                            .append("div")
+                            .attr("id", "tooltip")
+
+//Tooltip styling
+                            .style("position", "absolute")
+                            .style("opacity", 0)
+                            .style("padding", "1%")
+                            .style("font-size", "12px")
+                            .style("border", "1px solid black")
+                            .style("text-align", "center");
+
+//Tooltip on the treemap
+        game.attr("data-value", d => d.data.value)
+                .on("mouseover", (e, d) =>
+                    tooltip.style("opacity", 1)
+                            .style("display", "block")
+                            .style("background-color", colourScale(d.data.category))
+                            .attr("data-value", d.data.value)
+                            .html(`${d.data.name}<br>
+                                    Console: ${d.data.category}<br>
+                                    Value: ${d.data.value}`)
+)
+                .on("mousemove", e =>
+                    tooltip.style("left", (e.pageX + 20) + "px")
+                            .style("top", (e.pageY - 10) + "px")
+                )
+                .on("mouseout", e =>
+                    tooltip.style("opacity", 0)
+                            .style("display", "block")
+                )
+                
         });
